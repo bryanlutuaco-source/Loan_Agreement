@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>JFC COOP Loan Agreement</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: "Times New Roman", serif;
+  font-size: 11.5pt;
+  background: #c8c8c8;
+  line-height: 1.5;
+}
+
+/* ─── PAGE WRAPPER ─── */
+.page {
+  width: 816px;
+  min-height: 1056px;
+  background: #fff;
+  margin: 24px auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+  display: flex;
+  flex-direction: row;
+}
+
+/* ─── LEFT SIGNATURE STRIP ─── */
+.sig-strip {
+  width: 110px;
+  min-height: 1056px;
+  border-right: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 20px 6px;
+  gap: 18px;
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.strip-sig-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+/* Rotate label */
+.strip-label {
+  font-size: 7.5pt;
+  color: #555;
+  font-family: "Times New Roman", serif;
+  writing-mode: horizontal-tb;
+  text-align: center;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
+
+/* Sig image in strip */
+.strip-sig-img {
+  width: 90px;
+  height: 50px;
+  border: 1px dashed #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff;
+  cursor: pointer;
+}
+.strip-sig-img img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: none;
+}
+.strip-sig-img .sph {
+  font-size: 7pt;
+  color: #bbb;
+  text-align: center;
+  line-height: 1.3;
+  font-style: italic;
+}
+.strip-sig-line {
+  width: 90px;
+  border-top: 1px solid #000;
+  text-align: center;
+  font-size: 7pt;
+  padding-top: 2px;
+  color: #333;
+  margin-top: 2px;
+}
+
+.strip-divider {
+  width: 80%;
+  border-top: 1px dashed #ccc;
+}
+
+/* ─── PAGE CONTENT ─── */
+.page-content {
+  flex: 1;
+  padding: 50px 55px 50px 45px;
+  min-height: 1056px;
+}
+
+/* ─── PRINT ─── */
+@media print {
+  body { background: white !important; margin: 0; }
+  .no-print { display: none !important; }
+  .page {
+    width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    page-break-after: always;
+    min-height: 100vh;
+  }
+  .page:last-of-type { page-break-after: avoid; }
+  .sig-strip {
+    min-height: 100vh;
+    border-right: 1px solid #ccc;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .strip-sig-img { border: 1px dashed #bbb !important; }
+  .strip-sig-img .sph { display: none !important; }
+  .page-content { padding: 0.5in 0.55in 0.5in 0.35in; }
+}
+
+/* ─── TYPOGRAPHY ─── */
+h1 {
+  text-align: center; font-size: 13.5pt;
+  text-decoration: underline;
+  margin-bottom: 9px; letter-spacing: 1px;
+}
+h2 { text-align: center; font-size: 11.5pt; margin: 5px 0; }
+h3 {
+  text-align: center; font-size: 11.5pt;
+  text-decoration: underline; margin: 12px 0 7px;
+}
+p { text-align: justify; margin: 6px 0; }
+
+.indent { margin-left: 28px; }
+.sec    { margin: 8px 0; text-align: justify; }
+
+/* ─── BLANK PLACEHOLDERS ─── */
+.blank {
+  display: inline-block;
+  border-bottom: 1px solid #000;
+  min-width: 120px;
+  vertical-align: bottom;
+  padding: 0 3px 1px;
+  font-family: "Times New Roman", serif;
+  font-size: 11.5pt;
+  color: #444;
+}
+.blank-sm { min-width: 60px; }
+.blank-md { min-width: 120px; }
+.blank-lg { min-width: 200px; }
+.blank-xl { min-width: 280px; }
+
+/* ─── BOTTOM SIGNATURE ROW (page 2) ─── */
+.sig-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 16px;
+}
+.sig-col { flex: 1; text-align: center; }
+.sig-box {
+  width: 180px; height: 65px;
+  border: 1px dashed #bbb;
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  cursor: pointer; overflow: hidden;
+  background: #fafafa; margin: 0 auto;
+}
+.sig-box img { max-width:100%; max-height:100%; object-fit:contain; display:none; }
+.sig-ph { font-size: 9.5pt; color: #aaa; font-style: italic; }
+.sig-line {
+  border-top: 1px solid #000;
+  width: 180px; margin: 3px auto 0;
+  padding-top: 3px; font-size: 10pt; text-align: center;
+}
+.sig-hint {
+  font-size: 8.5pt; color: #777;
+  cursor: pointer; text-decoration: underline;
+  display: block; margin-top: 2px;
+}
+
+/* ─── ACK TABLE ─── */
+.ack-table { width:100%; border-collapse:collapse; margin:7px 0; font-size:10pt; }
+.ack-table th, .ack-table td { border:1px solid #000; padding:4px 7px; }
+.ack-table th { background:#f0f0f0; text-align:center; font-weight:bold; }
+
+/* ─── NOTARY TABLE ─── */
+.notary-table { width:100%; border-collapse:collapse; font-size:10pt; margin-top:7px; line-height:2; }
+
+hr.div { border:none; border-top:1px solid #999; margin:12px 0; }
+
+/* ─── UPLOAD CONTROLS (hidden on print) ─── */
+.upload-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 6px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+.upload-controls label {
+  font-size: 9pt;
+  color: #333;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.3;
+}
+.upload-controls input[type=file] { display: none; }
+
+/* ─── BUTTON ─── */
+.action-bar {
+  text-align:center; margin:20px 0 4px;
+  display:flex; justify-content:center; gap:12px; flex-wrap:wrap;
+}
+.btn {
+  padding:10px 26px; border:none; border-radius:8px;
+  font-size:13px; font-weight:bold; cursor:pointer;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.btn-pdf { background:#1a5276; color:#fff; }
+.btn:hover { opacity:0.87; }
+
+/* ─── FLOATING UPLOAD PANEL ─── */
+#uploadPanel {
+  position: fixed;
+  top: 20px; right: 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  z-index: 999;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  width: 170px;
+}
+#uploadPanel h4 {
+  font-size: 11px; margin-bottom: 10px; color: #333;
+  border-bottom: 1px solid #eee; padding-bottom: 5px;
+}
+.up-row {
+  display: flex; flex-direction: column;
+  align-items: flex-start; margin-bottom: 10px;
+}
+.up-row label {
+  font-size: 10px; color: #555; font-weight: bold; margin-bottom: 3px;
+}
+.up-btn {
+  padding: 5px 10px; background: #f4b042; border: none;
+  border-radius: 5px; font-size: 10px; cursor: pointer;
+  font-weight: bold;
+}
+.up-btn:hover { background: #e0992d; }
+.up-row input[type=file] { display: none; }
+.up-preview {
+  width: 100%; height: 34px; border: 1px dashed #ccc;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; margin-top: 3px; background: #fafafa;
+}
+.up-preview img { max-width:100%; max-height:100%; object-fit:contain; display:none; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════
+     FLOATING UPLOAD PANEL
+═══════════════════════════════════ -->
+<div id="uploadPanel" class="no-print">
+  <h4>📎 Upload Signatures</h4>
+
+  <div class="up-row">
+    <label>JFC COOP (Cherry P. Gonzales)</label>
+    <div class="up-preview"><img id="prev1"></div>
+    <label style="margin-top:4px;">
+      <button class="up-btn" onclick="document.getElementById('ufile1').click()">Choose File</button>
+      <input type="file" id="ufile1" accept="image/*"
+             onchange="applyAllSig(event,'jfc')">
+    </label>
+  </div>
+
+  <div class="up-row">
+    <label>Borrower</label>
+    <div class="up-preview"><img id="prev2"></div>
+    <label style="margin-top:4px;">
+      <button class="up-btn" onclick="document.getElementById('ufile2').click()">Choose File</button>
+      <input type="file" id="ufile2" accept="image/*"
+             onchange="applyAllSig(event,'borrower')">
+    </label>
+  </div>
+
+  <div class="up-row">
+    <label>Notary Public</label>
+    <div class="up-preview"><img id="prev3"></div>
+    <label style="margin-top:4px;">
+      <button class="up-btn" onclick="document.getElementById('ufile3').click()">Choose File</button>
+      <input type="file" id="ufile3" accept="image/*"
+             onchange="applyAllSig(event,'notary')">
+    </label>
+  </div>
+
+  <button class="btn btn-pdf" style="width:100%; margin-top:6px; padding:8px; font-size:11px;"
+          onclick="generatePDF()">&#128438; Generate PDF</button>
+</div>
+
+
+<!-- ═══════════════════════════════════
+     PAGE 1
+═══════════════════════════════════ -->
+<div class="page" id="page1">
+
+  <!-- LEFT STRIP -->
+  <div class="sig-strip" id="strip1">
+    <div class="strip-sig-block">
+      <div class="strip-label">JFC COOP</div>
+      <div class="strip-sig-img" title="JFC COOP Signature">
+        <img class="jfc-sig-img">
+        <span class="sph">Signature<br>here</span>
+      </div>
+      <div class="strip-sig-line">Cherry P. Gonzales<br>Gen. Manager</div>
+    </div>
+
+    <div class="strip-divider"></div>
+
+    <div class="strip-sig-block">
+      <div class="strip-label">BORROWER</div>
+      <div class="strip-sig-img" title="Borrower Signature">
+        <img class="borrower-sig-img">
+        <span class="sph">Signature<br>here</span>
+      </div>
+      <div class="strip-sig-line">{$borrower_name}</div>
+    </div>
+  </div>
+
+  <!-- PAGE 1 CONTENT -->
+  <div class="page-content">
+
+    <!-- LOGO -->
+    <div style="text-align:center; margin-bottom:10px;">
+      <a href="https://drive.google.com/drive/u/0/folders/1cilnF2Ge0YyOwPN6i1dnXy_jqwu3FRr_" target="_blank">
+        <img src="https://iili.io/BrY1paI.png" style="max-width:100%; height:auto; display:inline-block;">
+      </a>
+    </div>
+
+    <h1>LOAN AGREEMENT</h1>
+    <h2><strong>KNOW ALL MEN BY THESE PRESENT:</strong></h2>
+    <h2>This Loan Agreement executed by:</h2>
+
+    <p class="indent" style="margin-top:10px;">
+      I/We, <strong><span class="blank blank-lg">{$borrower_name}</span></strong>,
+      of legal age, Filipino citizen with postal address at
+      <strong><span class="blank blank-xl">{$borrower_address}</span></strong>,
+      hereinafter referred to as the <strong>BORROWER</strong>;
+    </p>
+
+    <h2 style="margin:8px 0;">- and -</h2>
+
+    <p class="indent">
+      <strong>JOLLIBEE FOODS CORPORATION EMPLOYEES' MULTI-PURPOSE COOPERATIVE (JFC COOP)</strong>,
+      a Cooperative duly organized and existing under the laws of the Philippines, with principal
+      office at Room 3107, 31st Floor Jollibee Plaza Condominium, F. Ortigas Jr. Ave., Ortigas
+      Center, Pasig City, represented by the General Manager, <strong>Cherry P. Gonzales</strong>,
+      hereinafter referred to as the <strong>JFC COOP</strong>.
+    </p>
+
+    <p style="margin-top:8px;">
+      At the request of the BORROWER, the JFC COOP has agreed to extend to the BORROWER a loan
+      (the "LOAN") under the terms and conditions hereinafter set forth below and on other pages
+      hereof;
+    </p>
+    <p>
+      NOW, THEREFORE, in consideration of the mutual covenants contained herein and the benefits
+      to be derived therefrom, the parties hereto agree as follows:
+    </p>
+
+    <div class="sec">
+      <strong>Section 1. AMOUNT</strong> – The LOAN which the JFC COOP has agreed to grant to the
+      BORROWER exclusively for the following purpose(s):
+      <div class="indent" style="margin-top:4px;">
+        Amount in words: <span class="blank blank-lg">{$amount_words}</span>
+        &nbsp;(Php <span class="blank blank-md">{$amount_figures}</span>)
+      </div>
+    </div>
+
+    <div class="sec">
+      <strong>Section 2. PURPOSE</strong> – The proceeds of the LOAN shall be used by the BORROWER
+      exclusively for the following purpose(s):
+      <div class="indent" style="margin-top:4px;">
+        The loan proceed shall be used for <span class="blank blank-lg">{$loan_purpose}</span>.
+      </div>
+    </div>
+
+    <div class="sec">
+      <strong>Section 3. LOAN RELEASE</strong> – The LOAN or any portion thereof shall not be
+      released unless all the conditions required by the JFC COOP have been complied with by the
+      BORROWER.
+      <div class="indent">- Proof of capacity to pay %</div>
+      <div class="indent">- Authority to debit others savings in-case of default</div>
+    </div>
+
+    <div class="sec">
+      <strong>Section 4. PROMISSORY NOTE</strong> – Each LOAN release, renewal or extension
+      thereof, shall be evidenced by a promissory note or notes (the "Notes") of the BORROWER
+      on the prescribed form of the JFC COOP.
+    </div>
+
+    <div class="sec">
+      <strong>Section 5. INTEREST</strong> – The LOAN shall bear interest of
+      <span class="blank blank-md">{$interest_words}</span>
+      percent (<span class="blank blank-sm">{$interest_rate}</span>%) per annum using the
+      diminishing balance method from the date of release of the LOAN at the rate indicated in
+      the promissory note/s representing the LOAN.
+    </div>
+
+    <div class="sec">
+      <strong>Section 6. MATURITY</strong> – The LOAN shall become due and payable, without need
+      of notice, demand, presentment or any other act or deed, as follows or in accordance with
+      a loan amortization schedule which may be updated from time to time:
+      <div class="indent" style="margin-top:4px;">
+        Term: <span class="blank blank-lg">{$loan_term}</span>
+      </div>
+      <p style="margin-top:5px;">
+        The amount contracted herein is based on the value of the peso at the time of execution
+        of the Note/s, and should there be any sudden decrease in the value thereof due to
+        "extra-ordinary inflation or deflation" takes place when so declared by the Cooperative
+        Development Authority (CDA) or in the event of any increase or decrease in any given year
+        of fifty percent (50%) in the consumer price index for Metro Manila, as announced by CDA.
+      </p>
+      <p>
+        If the due date for the payment of any amount due under the agreement falls on a Saturday,
+        holiday or non-banking day, the borrower shall pay the amount on the banking day
+        immediately preceding such due date.
+      </p>
+    </div>
+
+    <div class="sec">
+      <strong>Section 7. COOLING-OFF PERIOD</strong> – Approved loan requested to put on hold by
+      the borrower, shall be allowed within thirty (30) days from the date of approval. Beyond 30
+      days, loans shall be considered cancelled, and borrower may re-apply. Loan releases may opt
+      to cancel their loan within twenty-four (24) hours from the time of release, shall be charged
+      with corresponding administrative fee of one percent (1%) of approved loan amount or maximum
+      of One Thousand Pesos (Php1,000.00).
+    </div>
+
+    <div class="sec">
+      <strong>Section 8. PREPAYMENTS</strong> – A member borrower can pay lump-sum payment any
+      time subject to an administrative fee of Five Percent (5%) on the remaining principal balance
+      shall be charged.
+    </div>
+
+    <div class="sec">
+      <strong>Section 9. SECURITY</strong> – The LOAN, the interest, penalties and other charges
+      thereon and the Notes, including renewal, extension, amendment or notation thereof, and all
+      advances for taxes fees, insurance premiums and expense made by the JFC COOP, thereon shall
+      be secured by the following collateral or security arrangement (hereinafter referred to as
+      the "Collateral"):
+      <div class="indent"><u>Fixed and Other Savings.</u></div>
+    </div>
+
+    <div class="sec">
+      <strong>Section 10. RIGHT TO SET-OFF</strong> – The BORROWER shall open and maintain a
+      savings account with the JFC COOP during the effectivity of the LOAN. The BORROWER hereby
+      authorizes the JFC COOP to debit, set-off or apply, at its option, upon default of the
+      BORROWER, said deposit account or properties of the BORROWER which may come into the JFC
+      COOP's possession, by whatever manner or whatever cause, to the payment of the LOAN or Notes
+      or the fees, taxes, insurance premium or other expenses advance by the JFC COOP. For this
+      purpose, the BORROWER hereby irrevocably appoints JFC COOP as its attorney-in-fact to sell
+      or dispose of such properties and apply the proceeds thereof to the payment of the LOAN or
+      the Notes or said advances.
+    </div>
+
+    <div class="sec">
+      <strong>Section 11. ATTORNEY'S FEES</strong> – If the JFC COOP shall require the services
+      of counsel to enforce any of its rights and remedies in and to this agreement, the Notes,
+      the Collateral and related documents, the JFC COOP shall be entitled to recover from the
+      BORROWER as and for attorney's fee, a sum equal to twenty percent (20%) of the sum sought
+      to be recovered. In no case shall the attorney's fees be less than TWENTY THOUSAND PESOS
+      (Php20,000.00), in addition to costs of suit and all other fees and expenses incurred by
+      and reimbursable to the JFC COOP by the BORROWER.
+    </div>
+
+    <div class="sec">
+      <strong>Section 12. VENUE</strong> – Any legal action or proceeding arising out of or
+      connected with this Agreement, the Notes, the Collateral and related documents shall be
+      brought in the proper courts of Pasig City only, the BORROWER waiving for this purpose any
+      other venue provided for in the Rules of Court.
+    </div>
+
+    <div class="sec">
+      <strong>Section 13. OTHER CONDITIONS</strong> – The LOAN shall also be governed by the
+      General Terms and Conditions Governing Credit Transactions with JFC COOP which are made
+      integral part of this contract.
+    </div>
+
+  </div><!-- end page-content -->
+</div><!-- END PAGE 1 -->
+
+
+<!-- ═══════════════════════════════════
+     PAGE 2
+═══════════════════════════════════ -->
+<div class="page" id="page2">
+
+  <!-- LEFT STRIP -->
+  <div class="sig-strip" id="strip2">
+    <div class="strip-sig-block">
+      <div class="strip-label">JFC COOP</div>
+      <div class="strip-sig-img">
+        <img class="jfc-sig-img">
+        <span class="sph">Signature<br>here</span>
+      </div>
+      <div class="strip-sig-line">Cherry P. Gonzales<br>Gen. Manager</div>
+    </div>
+
+    <div class="strip-divider"></div>
+
+    <div class="strip-sig-block">
+      <div class="strip-label">BORROWER</div>
+      <div class="strip-sig-img">
+        <img class="borrower-sig-img">
+        <span class="sph">Signature<br>here</span>
+      </div>
+      <div class="strip-sig-line">{$borrower_name}</div>
+    </div>
+
+    <div class="strip-divider"></div>
+
+    <div class="strip-sig-block">
+      <div class="strip-label">NOTARY</div>
+      <div class="strip-sig-img">
+        <img class="notary-sig-img">
+        <span class="sph">Signature<br>here</span>
+      </div>
+      <div class="strip-sig-line">Notary Public</div>
+    </div>
+  </div>
+
+  <!-- PAGE 2 CONTENT -->
+  <div class="page-content">
+
+    <hr class="div">
+    <h3>Promissory Note</h3>
+
+    <div class="sec">
+      I hereby promise to pay to the order of JOLLIBEE FOODS CORPORATION EMPLOYEES'
+      MULTI-PURPOSE COOPERATIVE (hereinafter referred to as "JFC COOP"), the sum of
+      <span class="blank blank-lg">{$pn_amount_words}</span>
+      &nbsp;P <span class="blank blank-md">{$pn_amount_figures}</span>,
+      Philippine currency in <span class="blank blank-sm">{$pn_installments}</span>
+      equal semi-monthly/monthly instalment beginning on
+      <span class="blank blank-md">{$pn_start_date}</span>
+      and every <span class="blank blank-md">{$pn_schedule}</span>
+      through salary deductions/over the counter/bank transfer/post-dated checks payment,
+      provided however that in case of any default in payment, death, disability, resignation,
+      termination or separation from my employment with
+      <span class="blank blank-lg">{$employer_name}</span>,
+      all my investment deposited with the JFC COOP (shares, other savings and benefits
+      including dividend, patronage refund and damayan fund) shall be applied to the unpaid
+      balance of this loan, including interest, charges/fines thereon. In case said investments
+      are not sufficient to pay the amount of said unpaid balance, all benefits arising out of
+      my employment with <span class="blank blank-lg">{$employer_name}</span> including my
+      retirement, separation and such other benefits due to me as its employee, that amount
+      equivalent to the unpaid balance of this loan shall be further applied to the value of
+      this note. IN CASE THE ABOVE MENTIONED IS NOT SUFFICIENT TO SETTLE THE LOAN, NECESSARY
+      LEGAL ACTION SHALL APPLY.
+    </div>
+
+    <hr class="div">
+    <h3>Authorization</h3>
+
+    <div class="sec">
+      <strong>FOR EMPLOYED MEMBER OF JFC GROUP OF COMPANIES, AFFILIATES, SUBSIDIARIES AND
+      FRANCHISES:</strong> I do hereby authorize JFC COOP through Jollibee Worldwide Services
+      Pte. Ltd. (for Regular Members) / thru payroll accounting (Franchise Members) to deduct
+      from my semi-monthly salary until loan, including interest, charges/fines thereon, and is
+      paid in full, in case of any default in payment, death, disability, resignation, termination
+      or separation from my employment with
+      <span class="blank blank-lg">{$employer_name}</span>,
+      I do hereby waive in favor of JFC COOP all my investment deposited with the JFC COOP
+      (shares, other savings and benefits including dividend, patronage refund and damayan fund),
+      these shall be applied to the unpaid balance of this loan, including interest, charges/fines
+      thereon. In case said investments are not sufficient to pay the amount of said unpaid balance,
+      all benefits due arising out of my employment with
+      <span class="blank blank-lg">{$employer_name}</span> including my retirement, separation and
+      such other benefits due to me as its employee, that amount equivalent to the unpaid balance
+      of this loan shall be further applied. IN CASE THE ABOVE MENTIONED IS NOT SUFFICIENT TO
+      SETTLE THE LOAN, NECESSARY LEGAL ACTION SHALL APPLY.
+    </div>
+
+    <div class="sec" style="margin-top:6px;">
+      <strong>FOR RETAINED MEMBERS:</strong> I do hereby waive in favor of JFC COOP all my
+      investments deposited with the JFC COOP (shares, other savings and benefits including
+      dividend, patronage refund and damayan fund), these shall be applied to the unpaid balance
+      of this loan, including interest, charges/fines thereon. IN CASE THE ABOVE MENTIONED IS
+      NOT SUFFICIENT TO SETTLE THE LOAN, NECESSARY LEGAL ACTION SHALL APPLY.
+    </div>
+
+    <div class="sec" style="margin-top:8px;">
+      IN WITNESS WHEREOF, the parties hereto affix their respective signatures this
+      <span class="blank blank-md">{$signature_date}</span> at Pasig City.
+    </div>
+
+    <!-- FORMAL SIGNATURES AT BOTTOM OF PAGE 2 -->
+    <div class="sig-row">
+
+      <!-- JFC COOP -->
+      <div class="sig-col">
+        <div style="font-size:10pt; font-weight:bold; margin-bottom:5px; line-height:1.4;">
+          JOLLIBEE FOODS CORPORATION<br>
+          EMPLOYEES' MULTI-PURPOSE COOPERATIVE<br>(JFC COOP)
+        </div>
+        <div class="sig-box" id="mainSigBox1">
+          <img id="mainSig1" class="jfc-sig-img">
+          <span class="sig-ph" id="mainSig1Ph">Signature will<br>appear here</span>
+        </div>
+        <span class="sig-hint no-print" onclick="document.getElementById('ufile1').click()">
+          📎 Upload JFC COOP Signature
+        </span>
+        <div class="sig-line">
+          <strong>CHERRY P. GONZALES</strong><br>General Manager
+        </div>
+      </div>
+
+      <!-- BORROWER -->
+      <div class="sig-col">
+        <div style="font-size:10pt; line-height:1.4; margin-bottom:5px; color:transparent;">
+          &nbsp;<br>&nbsp;<br>&nbsp;
+        </div>
+        <div class="sig-box" id="mainSigBox2">
+          <img id="mainSig2" class="borrower-sig-img">
+          <span class="sig-ph" id="mainSig2Ph">Signature will<br>appear here</span>
+        </div>
+        <span class="sig-hint no-print" onclick="document.getElementById('ufile2').click()">
+          📎 Upload Borrower Signature
+        </span>
+        <div class="sig-line">
+          <strong><span class="blank blank-lg">{$borrower_name}</span></strong><br>
+          <span class="blank blank-md">{$borrower_position}</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- WITNESSES -->
+    <div class="sec" style="margin-top:16px;">
+      Signed in the presence of:&nbsp;&nbsp;
+      <span class="blank blank-lg">{$witness1}</span>
+      &nbsp;&nbsp;&nbsp;
+      <span class="blank blank-lg">{$witness2}</span>
+    </div>
+
+    <hr class="div">
+    <h3>ACKNOWLEDGEMENT</h3>
+
+    <p>
+      REPUBLIC OF THE PHILIPPINES )<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;) S.S
+    </p>
+
+    <p style="margin-top:5px;">
+      BEFORE ME, a notary public for and in
+      <span class="blank blank-md">{$notary_place}</span>
+      this <span class="blank blank-sm">{$notary_day}</span> day of
+      <span class="blank blank-md">{$notary_month}</span>
+      personally appeared the following persons, with their residence certificates and/or
+      government issued identification cards bearing their photographs and signatures, to wit:
+    </p>
+
+    <table class="ack-table">
+      <tr>
+        <th>NAME</th><th>GOV'T ISSUED ID</th><th>DATE/PLACE ISSUED</th>
+      </tr>
+      <tr>
+        <td><strong>Cherry P. Gonzales</strong></td>
+        <td>Passport: P0093488B</td>
+        <td>DFA January 2, 2029</td>
+      </tr>
+      <tr>
+        <td><span class="blank blank-lg">{$ack_name1}</span></td>
+        <td><span class="blank blank-lg">{$ack_id1}</span></td>
+        <td><span class="blank blank-lg">{$ack_date1}</span></td>
+      </tr>
+      <tr>
+        <td><span class="blank blank-lg">{$ack_name2}</span></td>
+        <td><span class="blank blank-lg">{$ack_id2}</span></td>
+        <td><span class="blank blank-lg">{$ack_date2}</span></td>
+      </tr>
+    </table>
+
+    <p>
+      Known to me and to me known to be the same persons who executed the foregoing instrument
+      and they acknowledge to me that the same is their free and voluntary act and deed as well
+      as the free and voluntary act and deed of the corporation they represent.
+    </p>
+    <p>
+      This instrument consisting of 2 pages including this page whereon the acknowledgement
+      clause is written, signed by the parties and their instrumental witnesses on each and every
+      page hereof, sealed with my notarial seal, pertains to a Loan Agreement.
+    </p>
+    <p>WITNESS MY HAND AND SEAL on the date and place first above-written.</p>
+
+    <!-- NOTARY SIGNATURE -->
+    <div style="text-align:right; margin-top:12px;">
+      <div class="sig-box" style="margin-left:auto;">
+        <img id="mainSig3" class="notary-sig-img">
+        <span class="sig-ph" id="mainSig3Ph">Signature will<br>appear here</span>
+      </div>
+      <span class="sig-hint no-print" style="text-align:right; display:block;"
+            onclick="document.getElementById('ufile3').click()">
+        📎 Upload Notary Signature
+      </span>
+      <div style="width:180px; border-top:1px solid #000; margin-left:auto;
+                  text-align:center; padding-top:3px; font-weight:bold; font-size:10pt;">
+        NOTARY PUBLIC
+      </div>
+    </div>
+
+    <!-- NOTARY DETAILS -->
+    <table class="notary-table">
+      <tr>
+        <td>Doc. No. <span class="blank blank-sm">{$notary_doc_no}</span> ;</td>
+        <td>Until December 31, 20 <span class="blank blank-sm">{$notary_until}</span></td>
+      </tr>
+      <tr>
+        <td>Pages No. <span class="blank blank-sm">{$notary_page_no}</span> ;</td>
+        <td>PTR No. <span class="blank blank-md">{$notary_ptr_no}</span></td>
+      </tr>
+      <tr>
+        <td>Book No. <span class="blank blank-sm">{$notary_book_no}</span> ;</td>
+        <td>Issued on <span class="blank blank-md">{$notary_issued_on}</span></td>
+      </tr>
+      <tr>
+        <td>Series of 20 <span class="blank blank-sm">{$notary_series}</span> ;</td>
+        <td>Issued at <span class="blank blank-md">{$notary_issued_at}</span></td>
+      </tr>
+    </table>
+
+  </div><!-- end page-content -->
+</div><!-- END PAGE 2 -->
+
+
+<script>
+/* ────────────────────────────────────────
+   Apply uploaded signature to ALL matching
+   elements across both pages at once
+──────────────────────────────────────── */
+function applyAllSig(event, role) {
+  var file = event.target.files[0];
+  if (!file) return;
+
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var src = e.target.result;
+
+    // Update preview in panel
+    var prevMap = { jfc: 'prev1', borrower: 'prev2', notary: 'prev3' };
+    var pImg = document.getElementById(prevMap[role]);
+    if (pImg) { pImg.src = src; pImg.style.display = 'block'; }
+
+    // Update all strip images and main sig boxes with matching class
+    var classMap = { jfc: 'jfc-sig-img', borrower: 'borrower-sig-img', notary: 'notary-sig-img' };
+    var phMap    = { jfc: 'sph', borrower: 'sph', notary: 'sph' };
+
+    document.querySelectorAll('.' + classMap[role]).forEach(function(img) {
+      img.src = src;
+      img.style.display = 'block';
+      // Hide placeholder span sibling if any
+      var ph = img.nextElementSibling;
+      if (ph) ph.style.display = 'none';
+    });
+
+    // Also hide the main sig box placeholders
+    var mainPhIds = { jfc: 'mainSig1Ph', borrower: 'mainSig2Ph', notary: 'mainSig3Ph' };
+    var mPh = document.getElementById(mainPhIds[role]);
+    if (mPh) mPh.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ─── Generate PDF ─── */
+function generatePDF() {
+  document.querySelectorAll('.no-print').forEach(function(el) {
+    el.style.display = 'none';
+  });
+  window.print();
+  setTimeout(function() {
+    document.querySelectorAll('.no-print').forEach(function(el) {
+      el.style.display = '';
+    });
+  }, 900);
+}
+</script>
+</body>
+</html>
